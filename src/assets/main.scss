@@ -1,0 +1,38 @@
+@import "the-new-css-reset";
+@import "@/assets/variables";
+
+:root {
+  font-size: calc(0.75vmax + 10px);
+}
+
+body {
+  --bg-color: 220, 224, 228;
+  --fg-color: 28, 32, 36;
+  --access-color: 0, 160, 240;
+  --accent-color: 224, 32, 224;
+  --notice-color: 240, 32, 32;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    --bg-color: 28, 32, 36;
+    --fg-color: 220, 224, 228;
+    --access-color: 32, 128, 192;
+    --accent-color: 192, 32, 192;
+    --notice-color: 192, 32, 32;
+  }
+}
+
+body {
+  background-color: rgb(var(--bg-color));
+  color: rgb(var(--fg-color));
+  font-family: monospace;
+  font-feature-settings: "palt";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  user-select: none;
+  @include scroll-bar();
+}
