@@ -11,6 +11,10 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  base: "/khaos-ram",
+  build: {
+    outDir: "docs",
+  },
   css: {
     postcss: {
       plugins: [
