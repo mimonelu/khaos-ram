@@ -1,5 +1,7 @@
 <script setup>
 import { reactive } from "vue"
+import Button from "@/components/Button.vue"
+import Input from "@/components/Input.vue"
 import Loader from "@/components/Loader.vue"
 import { sendToNostr } from "@/composables/nostr"
 import { irandom, pick, wait } from "@/composables/util"
@@ -15,10 +17,8 @@ const generate = () => {
       contents[y][x] = irandom(0, 100) === 0
         ? "💩"
         : irandom(0, 1) === 1
-          ? " "
-          : irandom(0, 1) === 1
-            ? "🫧"
-            : pick(notBenthosList)
+          ? "🫧"
+          : pick(notBenthosList)
     }
     contents[y] = contents[y].join("")
   }
@@ -61,34 +61,33 @@ const state = reactive({
 <template>
   <main>
     <section>
-      <h1>🐟</h1>
+      <h1>🐠<span>Noseatr</span></h1>
       <pre>{{ state.content }}</pre>
       <p>Release sea creatures into Nostr.</p>
       <p class="note">Support for browser extensions.</p>
       <form @submit.prevent="send">
-        <input
-          v-model="state.pubkey"
-          type="text"
-          autocomplete="off"
+        <Input
+          :model="state"
+          name="pubkey"
           :disabled="state.step === 'sending'"
           placeholder="Public key"
-        >
-        <input
-          v-model="state.seckey"
+        />
+        <Input
+          :model="state"
+          name="seckey"
           type="password"
-          autocomplete="off"
           :disabled="state.step === 'sending'"
           placeholder="Secret key"
-        >
-        <div
+        />
+        <p
           v-if="state.step === 'failed'"
           class="error"
-        >Failed. Something is wrong...</div>
-        <div
+        >Failed. Something is wrong...</p>
+        <p
           v-else-if="state.step === 'successed'"
           class="congrats"
-        >Successed!</div>
-        <button :disabled="state.step === 'sending'">Send</button>
+        >Successed!</p>
+        <Button :disabled="state.step === 'sending'">Send</Button>
         <Loader
           v-if="state.step === 'sending'"
           :progress="state.progress"
@@ -112,13 +111,19 @@ section {
   flex-direction: column;
   justify-content: center;
   grid-gap: 1rem;
-  padding: 2rem;
+  padding: 2rem 2rem 8rem;
 }
 
 h1 {
-  font-size: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  grid-gap: 0.5rem;
   line-height: 1;
-  text-align: center;
+  & > span {
+    font-size: 2rem;
+  }
 }
 
 pre {
@@ -128,6 +133,7 @@ pre {
   line-height: 1;
   margin: 0;
   padding: 1rem;
+  text-align: center;
   white-space: pre;
 }
 
@@ -148,41 +154,11 @@ form {
   position: relative;
 }
 
-input[type="password"],
-input[type="text"] {
-  border: 1px solid rgb(var(--access-color));
-  border-radius: 0.5rem;
-  line-height: 1.375;
-  padding: 0.5rem 1rem;
-  width: 100%;
-  user-select: unset;
-  &::placeholder {
-    color: rgba(var(--access-color), 0.75);
-  }
-  &:focus {
-    box-shadow: 0 0 0 1px rgb(var(--bg-color)), 0 0 0 4px rgb(var(--accent-color));
-  }
-}
-
 .error {
   color: rgb(var(--notice-color));
 }
 
 .congrats {
   color: rgb(var(--accent-color));
-}
-
-button {
-  background-color: rgb(var(--access-color));
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
-  color: rgb(var(--fg-color));
-  cursor: pointer;
-  font-weight: bold;
-  line-height: 1.375;
-  padding: 0.5rem 2rem;
-  &:focus {
-    box-shadow: 0 0 0 1px rgb(var(--bg-color)), 0 0 0 4px rgb(var(--accent-color));
-  }
 }
 </style>
