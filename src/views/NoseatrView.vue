@@ -70,42 +70,38 @@ const state = reactive({
 <template>
   <main>
     <section>
-      <h1>🐠<span>Noseatr</span></h1>
+      <h1>🐠<span>{{ $t("title") }}</span></h1>
       <pre>{{ state.content }}</pre>
-      <p>Release sea creatures into Nostr.</p>
-      <p class="note">Support for browser extensions.</p>
+      <p>{{ $t("description") }}</p>
+      <p class="note">{{ $t("browserExtension") }}</p>
       <form @submit.prevent="send">
         <Input
           :model="state"
           name="pubkey"
           :disabled="state.step === 'sending'"
-          placeholder="Public key"
+          :placeholder="$t('publicKey')"
         />
         <Input
           :model="state"
           name="seckey"
           type="password"
           :disabled="state.step === 'sending'"
-          placeholder="Secret key"
+          :placeholder="$t('secretKey')"
         />
-        <Button :disabled="state.step === 'sending'">Send</Button>
+        <Button :disabled="state.step === 'sending'">{{ $t("send") }}</Button>
         <Loader
           v-if="state.step === 'sending'"
           :progress="state.progress"
-        >Sending...</Loader>
+        >{{ $t("sending") }}</Loader>
       </form>
       <p
-        v-if="state.step === 'sending'"
-        class="sending"
-      >Sending...</p>
-      <p
-        v-else-if="state.step === 'successed'"
+        v-if="state.step === 'successed'"
         class="congrats"
-      >Successed!</p>
+      >{{ $t("successed") }}</p>
       <p
         v-else-if="state.step === 'failed'"
         class="error"
-      >Failed. Something is wrong...</p>
+      >{{ $t("failed") }}</p>
       <table class="relays-states">
         <tr
           v-for="relayState of state.relayStates"
@@ -162,6 +158,7 @@ pre {
 
 p {
   text-align: center;
+  white-space: pre-wrap;
 }
 
 .note {

@@ -1,0 +1,23 @@
+{
+  "en": {
+    "title": "Noseatr",
+    "description": "Release sea creatures into Nostr!",
+    "browserExtension": "Support for browser extensions.",
+    "publicKey": "Public key",
+    "secretKey": "Secret key",
+    "send": "Send",
+    "sending": "Sending...",
+    "successed": "Successed!",
+    "failed": "Failed. Something is wrong..."
+  },
+  "ja": {
+    "description": "Nostr に海の生き物を放流しましょう！",
+    "browserExtension": "ブラウザ拡張機能に対応しています。",
+    "publicKey": "公開鍵",
+    "secretKey": "秘密鍵",
+    "send": "送信する",
+    "sending": "送信中…",
+    "successed": "送信しました！",
+    "failed": "何らかの理由で処理が失敗しました。\n公開鍵と秘密鍵を確認してください。"
+  }
+}
