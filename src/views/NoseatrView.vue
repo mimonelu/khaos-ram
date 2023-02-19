@@ -1,16 +1,43 @@
-<script setup>
+<script lang="ts" setup>
 import { reactive } from "vue"
-import Button from "@/components/Button.vue"
-import Input from "@/components/Input.vue"
 import Loader from "@/components/Loader.vue"
-import { sendToNostr } from "@/composables/nostr"
-import { irandom, pick, wait } from "@/composables/util"
+import Nostr from "@/composables/nostr"
 
-const benthosList = [ "🐙", "🦀", "🐚", "🪨" ]
-const notBenthosList = ["🦑", "🐡", "🐠", "🐟", "🐬", "🦈" ]
+const state = reactive<{
+  content: string,
+  pubkey: string,
+  seckey: string,
+  step: ConnectionState,
+  progress: number,
+  relayStateMap: null | RelayStateMap,
+}>({
+  content: "",
+  pubkey: "",
+  seckey: "",
+  step: "",
+  progress: 0,
+  relayStateMap: null,
+})
 
-const generate = () => {
-  const contents = []
+const relayStateMapLabel: { [state: string]: string } = {
+  "connecting": "🔌",
+  "connected": "🔥",
+  "disconnected": "👍",
+  "failed": "❌",
+}
+
+const benthosList = ["🐙", "🦀", "🐚", "🪨"]
+const notBenthosList = ["🦑", "🐡", "🐠", "🐟", "🐬", "🦈"]
+
+const irandom = (min: number, max: number): number =>
+  Math.floor(Math.random() * (max - min + 1)) + min
+const pick = (array: Array<any>): any =>
+  array[Math.floor(Math.random() * array.length)]
+const wait = (duration: number) =>
+  new Promise((resolve: Function) => setTimeout(resolve, duration))
+
+const generate = (): string => {
+  const contents: any = []
   for (let y = 0; y < 3; y++) {
     contents[y] = []
     for (let x = 0; x < 10; x++) {
@@ -33,38 +60,24 @@ const generate = () => {
 }
 
 const send = async () => {
-  if (state.step === "sending") return
-  state.step = "sending"
-  state.relayStates = null
-  const result = await sendToNostr({
+  if (state.step === "connecting") return
+  state.step = "connecting"
+  state.relayStateMap = null
+  const result = await Nostr.send({
     pubkey: state.pubkey,
     seckey: state.seckey,
     content: generate(),
-    onProgress (relayStates, progress) {
+    onProgress (relayStateMap: RelayStateMap, progress: number) {
       state.progress = Math.round(progress * 100)
-      state.relayStates = relayStates
+      state.relayStateMap = relayStateMap
     },
   })
-  if (result === "successed") await wait(500)
+  if (result === "disconnected") await wait(500)
   state.step = result
   state.progress = 0
 }
 
-const relayStateLabelMap = {
-  0: "❓",
-  1: "🔌",
-  2: "👍",
-  3: "❌",
-}
-
-const state = reactive({
-  content: generate(),
-  pubkey: "",
-  seckey: "",
-  step: "",
-  progress: 0,
-  relayStates: [],
-})
+state.content = generate()
 </script>
 
 <template>
@@ -75,27 +88,31 @@ const state = reactive({
       <p>{{ $t("description") }}</p>
       <p class="note">{{ $t("browserExtension") }}</p>
       <form @submit.prevent="send">
-        <Input
-          :model="state"
-          name="pubkey"
-          :disabled="state.step === 'sending'"
+        <input
+          v-model="state.pubkey"
+          class="textbox"
+          type="text"
+          :disabled="state.step === 'connecting'"
           :placeholder="$t('publicKey')"
         />
-        <Input
-          :model="state"
-          name="seckey"
-          type="password"
-          :disabled="state.step === 'sending'"
+        <input
+          v-model="state.seckey"
+          class="textbox"
+          type="current-password"
+          :disabled="state.step === 'connecting'"
           :placeholder="$t('secretKey')"
         />
-        <Button :disabled="state.step === 'sending'">{{ $t("send") }}</Button>
+        <button
+          class="button"
+          :disabled="state.step === 'connecting'"
+        >{{ $t("send") }}</button>
         <Loader
-          v-if="state.step === 'sending'"
+          v-if="state.step === 'connecting'"
           :progress="state.progress"
         >{{ $t("sending") }}</Loader>
       </form>
       <p
-        v-if="state.step === 'successed'"
+        v-if="state.step === 'disconnected'"
         class="congrats"
       >{{ $t("successed") }}</p>
       <p
@@ -104,11 +121,11 @@ const state = reactive({
       >{{ $t("failed") }}</p>
       <table class="relays-states">
         <tr
-          v-for="relayState of state.relayStates"
+          v-for="relayState, url in state.relayStateMap"
           :data-state="relayState.state"
         >
-          <td class="state">{{ relayStateLabelMap[relayState.state] }}</td>
-          <td class="url">{{ relayState.url }}</td>
+          <td class="state">{{ relayStateMapLabel[relayState.state] ?? "❓" }}</td>
+          <td class="url">{{ url }}</td>
         </tr>
       </table>
       <p class="note">&copy; 2023 mimonelu</p>
