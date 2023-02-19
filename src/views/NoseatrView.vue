@@ -35,18 +35,26 @@ const generate = () => {
 const send = async () => {
   if (state.step === "sending") return
   state.step = "sending"
+  state.relayStates = null
   const result = await sendToNostr({
     pubkey: state.pubkey,
     seckey: state.seckey,
     content: generate(),
-    window,
-    onProgress (progress) {
+    onProgress (relayStates, progress) {
       state.progress = Math.round(progress * 100)
+      state.relayStates = relayStates
     },
   })
   if (result === "successed") await wait(500)
   state.step = result
   state.progress = 0
+}
+
+const relayStateLabelMap = {
+  0: "❓",
+  1: "🔌",
+  2: "👍",
+  3: "❌",
 }
 
 const state = reactive({
@@ -55,6 +63,7 @@ const state = reactive({
   seckey: "",
   step: "",
   progress: 0,
+  relayStates: [],
 })
 </script>
 
@@ -79,20 +88,33 @@ const state = reactive({
           :disabled="state.step === 'sending'"
           placeholder="Secret key"
         />
-        <p
-          v-if="state.step === 'failed'"
-          class="error"
-        >Failed. Something is wrong...</p>
-        <p
-          v-else-if="state.step === 'successed'"
-          class="congrats"
-        >Successed!</p>
         <Button :disabled="state.step === 'sending'">Send</Button>
         <Loader
           v-if="state.step === 'sending'"
           :progress="state.progress"
         >Sending...</Loader>
       </form>
+      <p
+        v-if="state.step === 'sending'"
+        class="sending"
+      >Sending...</p>
+      <p
+        v-else-if="state.step === 'successed'"
+        class="congrats"
+      >Successed!</p>
+      <p
+        v-else-if="state.step === 'failed'"
+        class="error"
+      >Failed. Something is wrong...</p>
+      <table class="relays-states">
+        <tr
+          v-for="relayState of state.relayStates"
+          :data-state="relayState.state"
+        >
+          <td class="state">{{ relayStateLabelMap[relayState.state] }}</td>
+          <td class="url">{{ relayState.url }}</td>
+        </tr>
+      </table>
       <p class="note">&copy; 2023 mimonelu</p>
     </section>
   </main>
@@ -111,7 +133,8 @@ section {
   flex-direction: column;
   justify-content: center;
   grid-gap: 1rem;
-  padding: 2rem 2rem 8rem;
+  padding: 2rem 1rem 8rem;
+  width: 24rem;
 }
 
 h1 {
@@ -160,5 +183,22 @@ form {
 
 .congrats {
   color: rgb(var(--accent-color));
+}
+
+.relays-states {
+  font-size: 0.75rem;
+  &:empty {
+    display: contents;
+  }
+  td {
+    padding: 0.25rem 0.5rem;
+    &:last-child {
+      width: 100%;
+      word-break: break-all;
+    }
+  }
+  [data-state="3"] {
+    color: rgb(var(--notice-color));
+  }
 }
 </style>
